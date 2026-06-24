@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TJ Gadgets Support ⚡</title>
+<style>
+  :root {
+    /* Cyberpunk Tech palette */
+    --space-black: #05030f;
+    --space-deep: #081020;
+    --card: rgba(14, 25, 46, 0.75);
+    --card-border: rgba(92, 168, 255, 0.45);
+    --neon-blue: #00e5ff;
+    --neon-purple: #704bff;
+    --neon-green: #00ffb2;
+    --neon-pink: #ff3df0;
+    --neon-red: #ff3333;
+    --neon-yellow: #ffd24b;
+    --primary: #00e5ff;
+    --bubble-bot: rgba(0, 229, 255, 0.12);
+    --bubble-user: linear-gradient(135deg, #184da3, #4b6fff);
+    --text: #e6f0ff;
+    --muted: #86a2c9;
+    --ok: #00ffb2;
+    --warn: #ffd24b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    font-family: "Orbitron", "Segoe UI", "Rajdhani", system-ui, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(75, 132, 255, 0.25), transparent 60%),
+      radial-gradient(1000px 500px at -10% 110%, rgba(0,229,255,.18), transparent 55%),
+      linear-gradient(160deg, var(--space-black), var(--space-deep) 60%, #03080c);
+    overflow: hidden;
+  }
+
+  /* Animated starfield + data drift */
+  body::before, body::after {
+    content: "";
+    position: fixed; inset: -50%;
+    z-index: 0;
+    pointer-events: none;
+    background-repeat: repeat;
+  }
+  body::before {
+    background-image:
+      radial-gradient(1.5px 1.5px at 20% 30%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 70% 60%, #cfe9ff, transparent),
+      radial-gradient(1px 1px at 40% 80%, #fff, transparent),
+      radial-gradient(2px 2px at 85% 15%, #b4d8ff, transparent),
+      radial-gradient(1px 1px at 55% 45%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 10% 70%, #b9f6ff, transparent);
+    background-size: 600px 600px;
+    opacity: .7;
+    animation: drift 120s linear infinite, twinkle 4s ease-in-out infinite alternate;
+  }
+  @keyframes drift { from { transform: translate3d(0,0,0); } to { transform: translate3d(-300px,-300px,0); } }
+  @keyframes twinkle { from { opacity: .4; } to { opacity: .8; } }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  /* Glassy tech panels */
+  header.topbar, main.chat, .kb-panel {
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+  }
+  header.topbar {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 14px 18px;
+    box-shadow: 0 0 24px rgba(75, 138, 255, 0.25), inset 0 0 18px rgba(0,229,255,.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo { 
+    font-size: 34px; line-height: 1; 
+    filter: drop-shadow(0 0 8px var(--neon-blue)); 
+    animation: float 5s ease-in-out infinite; 
+  }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg);} 50% { transform: translateY(-3px) rotate(4deg);} }
+  .titles h1 {
+    margin: 0; font-size: 22px; letter-spacing: 1.5px; text-transform: uppercase;
+    background: linear-gradient(90deg, #fff, var(--neon-blue), var(--neon-purple));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 18px rgba(0, 229, 255, 0.35);
+  }
+  .titles p { margin: 2px 0 0; font-size: 13px; color: var(--neon-green); letter-spacing: .5px; }
+
+  /* Knowledge Base Manager UI */
+  .toolbar { margin-left: auto; }
+  .kb-toggle-btn {
+    background: rgba(0, 229, 255, 0.15);
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .kb-toggle-btn:hover { background: rgba(0, 229, 255, 0.3); box-shadow: 0 0 12px rgba(0, 229, 255, 0.4); }
+  
+  .kb-panel {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 15px;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 0 20px rgba(75, 138, 255, 0.2);
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+  .kb-panel.active { display: flex; animation: slideDown 0.3s ease; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .kb-panel h3, .kb-panel h4 { margin: 0; color: var(--neon-blue); text-transform: uppercase; letter-spacing: 1px; }
+  .kb-list { display: flex; flex-direction: column; gap: 8px; }
+  .kb-item {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .kb-item.editing { border-color: var(--neon-yellow); box-shadow: 0 0 8px rgba(255, 210, 75, 0.2); }
+  .kb-item-details { flex: 1; font-size: 13px; line-height: 1.4; color: var(--muted); word-break: break-word; }
+  .kb-item-details strong { color: #fff; }
+  .raw-context-text { margin-bottom: 6px; padding: 6px; background: rgba(0, 229, 255, 0.05); border-left: 2px solid var(--neon-blue); border-radius: 0 4px 4px 0; font-style: italic;}
+  
+  .kb-item-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  
+  .kb-action-btn {
+    padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;
+  }
+  
+  .kb-edit-btn { background: rgba(255, 210, 75, 0.15); border: 1px solid var(--neon-yellow); color: var(--neon-yellow); }
+  .kb-edit-btn:hover { background: rgba(255, 210, 75, 0.3); box-shadow: 0 0 10px rgba(255, 210, 75, 0.4); }
+
+  .kb-remove-btn { background: rgba(255, 61, 240, 0.15); border: 1px solid var(--neon-pink); color: var(--neon-pink); }
+  .kb-remove-btn:hover { background: rgba(255, 61, 240, 0.3); box-shadow: 0 0 10px rgba(255, 61, 240, 0.4); }
+  
+  /* Double click confirm styling */
+  .kb-remove-btn.confirming {
+    background: rgba(255, 51, 51, 0.2); border-color: var(--neon-red); color: var(--neon-red);
+    box-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+    animation: pulseWarn 1s infinite;
+  }
+  @keyframes pulseWarn { 0%,100% { box-shadow: 0 0 10px rgba(255, 51, 51, 0.3); } 50% { box-shadow: 0 0 20px rgba(255, 51, 51, 0.7); } }
+  
+  .kb-show-btn { background: rgba(0, 229, 255, 0.15); border: 1px solid var(--neon-blue); color: var(--neon-blue); }
+  .kb-show-btn:hover { background: rgba(0, 229, 255, 0.3); box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
+  
+  .kb-add-form { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; }
+  
+  .voice-wrapper { display: flex; gap: 8px; align-items: stretch; }
+  .voice-wrapper textarea { flex: 1; min-height: 80px !important; border-color: var(--neon-purple) !important; }
+  .mic-btn {
+    background: rgba(255, 61, 240, 0.15); border: 1px solid var(--neon-pink); color: #fff;
+    border-radius: 8px; width: 50px; cursor: pointer; font-size: 20px; transition: 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mic-btn:hover { background: rgba(255, 61, 240, 0.3); box-shadow: 0 0 12px rgba(255, 61, 240, 0.4); }
+  .mic-btn.listening {
+    background: rgba(255, 51, 51, 0.4); border-color: var(--neon-red); box-shadow: 0 0 15px rgba(255, 51, 51, 0.6);
+    animation: pulseWarn 1s infinite;
+  }
+
+  .kb-add-form input, .kb-add-form textarea {
+    background: rgba(5, 3, 15, 0.7); border: 1px solid var(--card-border); color: var(--text);
+    padding: 10px; border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s;
+  }
+  .kb-add-form input:focus, .kb-add-form textarea:focus { border-color: var(--neon-blue); }
+  .kb-add-form textarea { resize: vertical; min-height: 60px; }
+  .kb-add-btn {
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue)); border: none; color: #fff;
+    padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; text-transform: uppercase; transition: filter 0.2s, background 0.2s;
+  }
+  .kb-add-btn:hover { filter: brightness(1.2); }
+  .kb-add-btn.update-mode { background: linear-gradient(135deg, #d49520, var(--neon-yellow)); color: #000; }
+
+  /* Main Chat Area */
+  main.chat {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    box-shadow: 0 0 30px rgba(0,229,255,.12), inset 0 0 24px rgba(75, 138, 255, 0.10);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--neon-blue) transparent;
+  }
+  .messages::-webkit-scrollbar { width: 8px; }
+  .messages::-webkit-scrollbar-thumb { background: linear-gradient(var(--neon-purple), var(--neon-blue)); border-radius: 8px; }
+  
+  .row { display: flex; gap: 8px; align-items: flex-end; animation: warpIn .35s cubic-bezier(.2,.8,.2,1); }
+  @keyframes warpIn { from { opacity: 0; transform: translateY(12px) scale(.97);} to { opacity: 1; transform: none;} }
+  .row.user { justify-content: flex-end; }
+  .avatar { font-size: 26px; filter: drop-shadow(0 0 6px rgba(0,229,255,.4)); }
+  
+  .bubble {
+    max-width: 80%;
+    padding: 12px 15px;
+    border-radius: 16px;
+    font-size: 15px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 1px solid transparent;
+    position: relative;
+  }
+  .bot .bubble {
+    background: var(--bubble-bot);
+    border-color: rgba(0,229,255,.35);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 0 16px rgba(0,229,255,.12);
+    color: #d9faff;
+  }
+  .user .bubble {
+    background: var(--bubble-user);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 0 18px rgba(75, 111, 255, 0.45);
+  }
+  
+  .typing .bubble { color: var(--neon-blue); font-style: italic; animation: pulseGlow 1.2s ease-in-out infinite; }
+  @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 10px rgba(0,229,255,.2);} 50% { box-shadow: 0 0 22px rgba(0,229,255,.6);} }
+
+  /* Copy Button Styles */
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    color: var(--neon-blue);
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { background: rgba(0, 229, 255, 0.2); box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
+  .copy-btn:active { transform: scale(0.95); }
+  .copy-btn.success { border-color: var(--neon-green); color: var(--neon-green); background: rgba(0, 255, 178, 0.15); }
+
+  .composer {
+    border-top: 1px solid rgba(92, 168, 255, 0.25);
+    padding: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .composer input {
+    flex: 1;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(0,229,255,.40);
+    background: rgba(5,3,15,.7);
+    color: var(--text);
+    outline: none;
+    transition: box-shadow .2s, border-color .2s;
+  }
+  .composer input::placeholder { color: #5a759e; }
+  .composer input:focus { border-color: var(--neon-blue); box-shadow: 0 0 16px rgba(0, 229, 255, 0.4); }
+  
+  .send {
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 0 18px rgba(0, 229, 255, 0.4);
+    transition: transform .1s, box-shadow .2s, filter .2s;
+  }
+  .send:hover { filter: brightness(1.15); box-shadow: 0 0 26px rgba(0,229,255,.6); }
+  .send:active { transform: scale(.95); }
+  .send:disabled { opacity: .5; cursor: default; box-shadow: none; }
+
+  .hint { text-align: center; font-size: 12px; color: var(--muted); padding: 2px 0 6px; }
+  
+  @media (max-width: 520px) {
+    .titles h1 { font-size: 18px; }
+    .bubble { font-size: 14px; max-width: 85%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="logo">⚡</div>
+    <div class="titles">
+      <h1>TJ Gadgets</h1>
+      <p>System Online: Virtual Support Agent</p>
+    </div>
+    <div class="toolbar">
+      <button id="toggleKbBtn" class="kb-toggle-btn">⚙️ Manage DB</button>
+    </div>
+  </header>
+
+  <div id="kbPanel" class="kb-panel">
+    <h3>Knowledge Base</h3>
+    <div class="kb-list" id="kbList">
+      </div>
+    <div class="kb-add-form">
+      <h4 id="formTitle">Add New Response Rule</h4>
+      
+      <div class="voice-wrapper">
+        <textarea id="newRawContext" placeholder="Voice Transcript / Large Text Block (Optional) - Click mic to dictate long policies..."></textarea>
+        <button id="micBtn" class="mic-btn" type="button" title="Start/Stop Voice Dictation">🎙️</button>
+      </div>
+
+      <input type="text" id="newKeywords" placeholder="Keywords (comma-separated, e.g. holiday, sale, discount)" />
+      <textarea id="newAnswer" placeholder="Type the agent's final response here..."></textarea>
+      <button id="addKbBtn" class="kb-add-btn">Add to Database</button>
+    </div>
+  </div>
+
+  <main class="chat">
+    <div id="messages" class="messages" aria-live="polite"></div>
+    <form id="composer" class="composer" autocomplete="off">
+      <input id="input" type="text" placeholder="Ask about shipping, returns, warranties..." />
+      <button id="send" class="send" type="submit">Send</button>
+    </form>
+  </main>
+  <div class="hint">Responses are generated instantly based on active store policies.</div>
+</div>
+
+<script>
+/* ============================================================================
+   TJ GADGETS KNOWLEDGE BASE (Dynamic Array)
+   ========================================================================== */
+let faqData = [
+  {
+    keywords: ["ship", "delivery", "how long", "arrive", "track"],
+    answer: "I'd be happy to help with shipping details! 📦 Delivery times depend on the option you pick at checkout:\n• **Standard:** 3-7 business days (and it's completely free on orders over $99!)\n• **Express:** 1-3 business days\nWe happily ship to all US states, PO Boxes, and military addresses. You'll receive a tracking email within 24 hours of your order shipping out so you can keep an eye on it!",
+    rawContext: ""
+  },
+  {
+    keywords: ["return", "refund", "send back", "restock"],
+    answer: "Returns are easy! You have a full 30-day window from your delivery date to send items back. 🔄\n• If an item is defective, return shipping is completely on us!\n• If you simply changed your mind, you'll just need to cover the return shipping, and a 15% restocking fee may apply.\nOnce we receive it, we'll send your refund back to your original payment method within 5-10 business days.",
+    rawContext: ""
+  },
+  {
+    keywords: ["warranty", "broken", "guarantee", "fix"],
+    answer: "We've got you covered! 🛠️ Here is how our warranty policy works:\n• **New items:** You get a full 1-year manufacturer warranty, plus our 30-day GadgetHub replacement guarantee.\n• **Refurbished/open-box:** These come with a solid 90-day GadgetHub warranty.\nJust a quick heads-up: any accidental damage or misuse does void the warranty, so please take good care of your gadgets!",
+    rawContext: ""
+  },
+  {
+    keywords: ["charged twice", "double", "duplicate", "extra charge"],
+    answer: "Oh no, I completely understand how frustrating that can be! 😟 Let's get that fixed for you right away. If you see a duplicate charge, please contact our team with your order details. We always fully refund duplicate charges within 48 hours!",
+    rawContext: ""
+  },
+  {
+    keywords: ["cancel", "rewards", "subscription", "membership"],
+    answer: "You can absolutely cancel your GadgetHub Rewards membership ($9.99/month) whenever you like, no strings attached! 💳 Just keep in mind that prorated refunds are only issued if you cancel within the first 14 days of your renewal date.",
+    rawContext: ""
+  },
+  {
+    keywords: ["privacy", "sell my info", "data", "secure"],
+    answer: "Your privacy is incredibly important to us! 🔒 Please rest assured that we absolutely never sell your personal data. We only share the bare minimum necessary with our trusted shipping carriers and payment processors so we can safely fulfill your order.",
+    rawContext: ""
+  },
+  {
+    keywords: ["gift card", "code won't work", "balance"],
+    answer: "Let's figure out what's going on with your gift card! 🎁 The good news is they never expire (and they have no cash value). First, try double-checking the code and your balance in your account. If it's still acting up, just send us a quick screenshot and we'll be more than happy to help you sort it out!",
+    rawContext: ""
+  },
+  {
+    keywords: ["price match", "cheaper", "promo code"],
+    answer: "While we always try to offer the best deals, we unfortunately don't offer price matching after a purchase has already been made. 🛍️ Also, just a friendly reminder that promo codes and gift cards usually can't be combined at checkout.",
+    rawContext: ""
+  }
+];
+
+/* ============================================================================
+   KNOWLEDGE BASE MANAGEMENT LOGIC
+   ========================================================================== */
+const kbPanel = document.getElementById("kbPanel");
+const toggleKbBtn = document.getElementById("toggleKbBtn");
+const kbList = document.getElementById("kbList");
+const addKbBtn = document.getElementById("addKbBtn");
+const formTitle = document.getElementById("formTitle");
+const newRawContextInput = document.getElementById("newRawContext");
+const newKeywordsInput = document.getElementById("newKeywords");
+const newAnswerInput = document.getElementById("newAnswer");
+const micBtn = document.getElementById("micBtn");
+
+let expandedItems = new Set(); // Tracks which DB entries are expanded
+let editingIndex = -1; // Tracks if we are currently editing an item
+let confirmTimeout; // Timer for the double-click remove lock
+
+// Toggle the Panel
+toggleKbBtn.addEventListener("click", () => {
+  kbPanel.classList.toggle("active");
+  if (kbPanel.classList.contains("active")) {
+    renderKB();
+  }
+});
+
+// Toggle full text for a specific item
+window.toggleKBText = function(index) {
+  if (expandedItems.has(index)) {
+    expandedItems.delete(index);
+  } else {
+    expandedItems.add(index);
+  }
+  renderKB();
+};
+
+// Render list of rules
+function renderKB() {
+  kbList.innerHTML = "";
+  faqData.forEach((item, index) => {
+    const itemEl = document.createElement("div");
+    itemEl.className = `kb-item ${editingIndex === index ? 'editing' : ''}`;
+    
+    const isExpanded = expandedItems.has(index);
+    
+    // Replace newlines with <br> to format bullet points nicely when expanded
+    const formattedAnswer = item.answer.replace(/\n/g, "<br>");
+    const shortAnswer = item.answer.length > 55 ? item.answer.substring(0, 55).replace(/\n/g, " ") + "..." : formattedAnswer;
+    
+    const answerToDisplay = isExpanded ? formattedAnswer : shortAnswer;
+    const btnText = isExpanded ? "Show Less" : "Show All";
+    
+    const needsToggle = item.answer.length > 55 || (item.rawContext && item.rawContext.length > 0);
+    const toggleBtnHTML = needsToggle 
+      ? `<button class="kb-action-btn kb-show-btn" onclick="toggleKBText(${index})">${btnText}</button>` 
+      : ``;
+
+    const rawContextDisplay = (isExpanded && item.rawContext) 
+      ? `<div class="raw-context-text"><strong>Source Text:</strong> ${item.rawContext}</div>` 
+      : ``;
+
+    itemEl.innerHTML = `
+      <div class="kb-item-details">
+        ${rawContextDisplay}
+        <strong>Keywords:</strong> ${item.keywords.join(", ")}<br>
+        <strong>Answer:</strong> ${answerToDisplay}
+      </div>
+      <div class="kb-item-actions">
+        <button class="kb-action-btn kb-edit-btn" onclick="editKBItem(${index})">Edit</button>
+        <button class="kb-action-btn kb-remove-btn" onclick="confirmRemove(this, ${index})" onmouseleave="resetRemove(this)">Remove 🔒</button>
+        ${toggleBtnHTML}
+      </div>
+    `;
+    kbList.appendChild(itemEl);
+  });
+}
+
+// Edit rule
+window.editKBItem = function(index) {
+  editingIndex = index;
+  
+  // Populate the form with the chosen item's data
+  newRawContextInput.value = faqData[index].rawContext || "";
+  newKeywordsInput.value = faqData[index].keywords.join(", ");
+  newAnswerInput.value = faqData[index].answer;
+  
+  // Change UI to reflect update mode
+  formTitle.textContent = "Edit Response Rule";
+  addKbBtn.textContent = "Update Rule";
+  addKbBtn.classList.add("update-mode");
+  
+  // Re-render to highlight the item being edited
+  renderKB();
+  newKeywordsInput.focus();
+};
+
+// Double-Click Lock/Unlock Remove Logic
+window.confirmRemove = function(btn, index) {
+  if (btn.classList.contains('confirming')) {
+    clearTimeout(confirmTimeout);
+    removeKBItem(index);
+  } else {
+    btn.classList.add('confirming');
+    btn.innerHTML = 'Confirm? 🔓';
+    confirmTimeout = setTimeout(() => {
+      resetRemove(btn);
+    }, 3000);
+  }
+};
+
+window.resetRemove = function(btn) {
+  if (btn && btn.classList.contains('confirming')) {
+    btn.classList.remove('confirming');
+    btn.innerHTML = 'Remove 🔒';
+  }
+};
+
+// Actual Remove function (called on second click)
+function removeKBItem(index) {
+  faqData.splice(index, 1);
+  expandedItems.clear();
+  
+  if (editingIndex === index) {
+    resetEditForm();
+  } else if (editingIndex > index) {
+    editingIndex--;
+  }
+  
+  renderKB();
+  addMessage("⚙️ System Note: A rule was removed from the agent's knowledge base.", "bot");
+}
+
+function resetEditForm() {
+  editingIndex = -1;
+  newRawContextInput.value = "";
+  newKeywordsInput.value = "";
+  newAnswerInput.value = "";
+  formTitle.textContent = "Add New Response Rule";
+  addKbBtn.textContent = "Add to Database";
+  addKbBtn.classList.remove("update-mode");
+}
+
+// Add or Update rule
+addKbBtn.addEventListener("click", () => {
+  const rawContext = newRawContextInput.value.trim();
+  const kwsRaw = newKeywordsInput.value.trim();
+  const answer = newAnswerInput.value.trim();
+  
+  if (!kwsRaw || !answer) {
+    alert("Please provide both keywords and an answer to save to the knowledge base.");
+    return;
+  }
+  
+  const keywords = kwsRaw.split(",").map(k => k.trim().toLowerCase()).filter(k => k.length > 0);
+  
+  if (editingIndex >= 0) {
+    faqData[editingIndex] = { keywords, answer, rawContext };
+    addMessage("⚙️ System Note: Rule successfully updated in the agent's knowledge base.", "bot");
+  } else {
+    faqData.push({ keywords, answer, rawContext });
+    addMessage("⚙️ System Note: New rule successfully added to the agent's knowledge base.", "bot");
+  }
+  
+  resetEditForm();
+  renderKB();
+  
+  if (editingIndex === -1) {
+    kbList.scrollTop = kbList.scrollHeight;
+  }
+});
+
+
+/* ============================================================================
+   SPEECH TO TEXT API LOGIC
+   ========================================================================== */
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  
+  let isListening = false;
+  
+  micBtn.addEventListener("click", () => {
+    if (isListening) {
+      recognition.stop();
+      return;
+    }
+    recognition.start();
+  });
+  
+  recognition.onstart = () => {
+    isListening = true;
+    micBtn.classList.add("listening");
+  };
+  
+  recognition.onresult = (event) => {
+    let finalTranscript = '';
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        finalTranscript += event.results[i][0].transcript;
+      }
+    }
+    if (finalTranscript) {
+      newRawContextInput.value += (newRawContextInput.value ? ' ' : '') + finalTranscript.trim();
+    }
+  };
+  
+  recognition.onend = () => {
+    isListening = false;
+    micBtn.classList.remove("listening");
+  };
+  
+  recognition.onerror = (event) => {
+    console.error("Speech recognition error:", event.error);
+    isListening = false;
+    micBtn.classList.remove("listening");
+  };
+} else {
+  micBtn.style.display = 'none';
+  newRawContextInput.placeholder = "Paste large text here (Voice Dictation is not supported in this browser)";
+}
+
+/* ============================================================================
+   CHAT LOGIC
+   ========================================================================== */
+function getBotResponse(input) {
+  const lowerInput = input.toLowerCase();
+  for (const faq of faqData) {
+    if (faq.keywords.some(kw => lowerInput.includes(kw))) {
+      return faq.answer;
+    }
+  }
+  return "Oh, I'm so sorry, but I couldn't quite find an exact match for that in my current records! 🥺 Would you mind rephrasing your question just a bit? (Or, if you're an admin, you can add a new rule in the Knowledge Base settings above!)";
+}
+
+const messagesEl = document.getElementById("messages");
+const inputEl = document.getElementById("input");
+const formEl = document.getElementById("composer");
+const sendBtn = document.getElementById("send");
+
+function addMessage(text, who) {
+  const row = document.createElement("div");
+  row.className = "row " + who;
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = who === "bot" ? "🤖" : "👤";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  
+  // Format bold markdown
+  const formattedText = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  bubble.innerHTML = formattedText.replace(/\n/g, "<br>");
+
+  if (who === "bot" && !text.includes("⚙️ System Note")) {
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "copy-btn";
+    copyBtn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg> Copy
+    `;
+    
+    copyBtn.onclick = () => {
+      // Clean up text by stripping out bold markers and citations for the user's clipboard
+      let cleanText = text.replace(/\*\*(.*?)\*\*/g, "$1");
+      cleanText = cleanText.replace(/\+\]/g, "").trim();
+      navigator.clipboard.writeText(cleanText);
+      
+      copyBtn.classList.add("success");
+      copyBtn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg> Copied!
+      `;
+      setTimeout(() => {
+        copyBtn.classList.remove("success");
+        copyBtn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg> Copy
+        `;
+      }, 2500);
+    };
+
+    bubble.appendChild(document.createElement("br"));
+    bubble.appendChild(copyBtn);
+  }
+
+  if (who === "user") { 
+    row.appendChild(bubble); 
+    row.appendChild(avatar); 
+  } else { 
+    row.appendChild(avatar); 
+    row.appendChild(bubble); 
+  }
+
+  messagesEl.appendChild(row);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function showTyping() {
+  const row = document.createElement("div");
+  row.className = "row bot typing";
+  row.id = "typingRow";
+  row.innerHTML = '<div class="avatar">🤖</div><div class="bubble">Scanning policies...</div>';
+  messagesEl.appendChild(row);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById("typingRow");
+  if (t) t.remove();
+}
+
+formEl.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = inputEl.value.trim();
+  if (!text) return;
+  
+  inputEl.value = "";
+  sendBtn.disabled = true;
+  
+  addMessage(text, "user");
+  showTyping();
+  
+  setTimeout(() => {
+    hideTyping();
+    const reply = getBotResponse(text);
+    addMessage(reply, "bot");
+    sendBtn.disabled = false;
+  }, 700);
+});
+
+// Initial Welcome Message
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    addMessage("Hi there! 👋 I'm your friendly TJ Gadgets Support Assistant ⚡. How can I help brighten your day? Feel free to ask me anything about shipping, returns, warranties, or our store policies!", "bot");
+  }, 300);
+});
+</script>
+</body>
+</html>
